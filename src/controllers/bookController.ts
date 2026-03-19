@@ -4,13 +4,20 @@ import {
   getBookByIdService,
   getBooksByQueryServer,
 } from "../services/bookService.js";
+import type {
+  GetBookParamsDto,
+  SearchBooksQueryDto,
+} from "../types/bookDtos.js";
 
 export async function getAllBooks(req: Request, res: Response) {
   const books = await getAllBooksService();
   res.status(200).json(books);
 }
 
-export async function getBookById(req: Request<{ id: string }>, res: Response) {
+export async function getBookById(
+  req: Request<GetBookParamsDto>,
+  res: Response,
+) {
   const { id } = req.params;
 
   if (!id) {
@@ -22,12 +29,14 @@ export async function getBookById(req: Request<{ id: string }>, res: Response) {
   res.status(200).json(book);
 }
 
-export async function getBooksByQuery(req: Request, res: Response) {
+export async function getBooksByQuery(
+  req: Request<{}, {}, {}, SearchBooksQueryDto>,
+  res: Response,
+) {
   const { q } = req.query;
 
-  if (typeof q !== "string") {
-    res.status(400).json({ error: "Query param q must be a string" });
-    return;
+  if (q === "") {
+    throw new Error("Query search is required");
   }
 
   const books = await getBooksByQueryServer(q);

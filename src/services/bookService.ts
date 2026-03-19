@@ -1,4 +1,6 @@
-export async function getAllBooksService() {
+import type { Book, OpenLibraryBook } from "../types/book.js";
+
+export async function getAllBooksService(): Promise<Book[]> {
   const response = await fetch("https://openlibrary.org/search.json?q=fiction");
 
   if (!response.ok) {
@@ -7,7 +9,7 @@ export async function getAllBooksService() {
 
   const data = await response.json();
 
-  return data.docs.slice(0, 10).map((book: any) => ({
+  return data.docs.slice(0, 10).map((book: OpenLibraryBook) => ({
     id: (book.isbn?.[0] ?? book.key).replace("/works/", ""),
     title: book.title,
     author: book.author_name?.[0] ?? "unknown",
@@ -15,14 +17,14 @@ export async function getAllBooksService() {
   }));
 }
 
-export async function getBookByIdService(id: string) {
+export async function getBookByIdService(id: string): Promise<Book> {
   const response = await fetch(`https://openlibrary.org/works/${id}.json`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch book");
   }
 
-  const book = await response.json();
+  const book: OpenLibraryBook = await response.json();
 
   return {
     id: id,
@@ -32,7 +34,7 @@ export async function getBookByIdService(id: string) {
   };
 }
 
-export async function getBooksByQueryServer(q: string) {
+export async function getBooksByQueryServer(q: string): Promise<Book[]> {
   const response = await fetch(`https://openlibrary.org/search.json?q=${q}`);
 
   if (!response.ok) {
@@ -45,7 +47,7 @@ export async function getBooksByQueryServer(q: string) {
     return [];
   }
 
-  return data.docs.slice(0, 10).map((book: any) => ({
+  return data.docs.slice(0, 10).map((book: OpenLibraryBook) => ({
     id: (book.isbn?.[0] ?? book.key).replace("/works/", ""),
     title: book.title,
     author: book.author_name?.[0] ?? "unknown",
