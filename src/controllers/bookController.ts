@@ -8,6 +8,10 @@ import type {
   GetBookParamsDto,
   SearchBooksQueryDto,
 } from "../types/bookDtos.js";
+import {
+  getBookParamsSchema,
+  searchBooksSchema,
+} from "../schemas/bookSchema.js";
 
 export async function getAllBooks(req: Request, res: Response) {
   const books = await getAllBooksService();
@@ -18,13 +22,15 @@ export async function getBookById(
   req: Request<GetBookParamsDto>,
   res: Response,
 ) {
-  const { id } = req.params;
+  const params = req.params;
 
-  if (!id) {
-    throw new Error("Book Id required");
+  const result = getBookParamsSchema.safeParse(params);
+
+  if (!result.success) {
+    return res.status(400).json({ error: result.error });
   }
 
-  const book = await getBookByIdService(id);
+  const book = await getBookByIdService(result.data.id);
 
   res.status(200).json(book);
 }
@@ -35,10 +41,12 @@ export async function getBooksByQuery(
 ) {
   const { q } = req.query;
 
-  if (q === "") {
-    throw new Error("Query search is required");
+  const result = searchBooksSchema.safeParse({ q });
+
+  if (!result.success) {
+    return res.status(400).json({ error: result.error });
   }
 
-  const books = await getBooksByQueryServer(q);
+  const books = await getBooksByQueryServer(result.data.q);
   res.status(200).json(books);
 }
