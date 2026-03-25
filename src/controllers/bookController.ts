@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import {
   getAllBooksService,
   getBookByIdService,
-  getBooksByQueryServer,
+  getBooksByQueryService,
 } from "../services/bookService.js";
 import type {
   GetBookParamsDto,
@@ -47,6 +47,6 @@ export async function getBooksByQuery(
     return res.status(400).json({ error: result.error });
   }
 
-  const books = await getBooksByQueryServer(result.data.q);
+  const books = await getBooksByQueryService(result.data.q);
   res.status(200).json(books);
 }
