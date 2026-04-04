@@ -8,7 +8,7 @@ export type OpenLibraryBook = {
   title: string;
   author_name?: string[];
   first_publish_year?: number;
-  // add more later
+  cover_i?: number;
 };
 
 export type Book = {
@@ -16,5 +16,5 @@ export type Book = {
   title: string;
   author: string;
   year: number | null;
-  // add more later
+  cover_id: number | null;
 };
