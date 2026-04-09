@@ -12,6 +12,7 @@ import {
   getBookParamsSchema,
   searchBooksSchema,
 } from "../schemas/bookSchema.js";
+import { z } from "zod";
 
 export async function getAllBooks(req: Request, res: Response) {
   const books = await getAllBooksService();
@@ -27,10 +28,21 @@ export async function getBookById(
   const result = getBookParamsSchema.safeParse(params);
 
   if (!result.success) {
-    return res.status(400).json({ error: result.error });
+    return res.status(400).json({
+      code: "INVALID_PARAMS",
+      message: "Invalid request parameters",
+      details: z.flattenError(result.error),
+    });
   }
 
   const book = await getBookByIdService(result.data.id);
+
+  if (book === null) {
+    return res.status(404).json({
+      code: "NOT_FOUND",
+      message: "Book not found",
+    });
+  }
 
   res.status(200).json(book);
 }
@@ -44,7 +56,11 @@ export async function getBooksByQuery(
   const result = searchBooksSchema.safeParse({ q });
 
   if (!result.success) {
-    return res.status(400).json({ error: result.error });
+    return res.status(400).json({
+      code: "INVALID_PARAMS",
+      message: "Invalid request parameters",
+      details: z.flattenError(result.error),
+    });
   }
 
   const books = await getBooksByQueryService(result.data.q);

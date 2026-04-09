@@ -11,12 +11,12 @@ export async function getAllBooksService(): Promise<Book[]> {
   return data;
 }
 
-export async function getBookByIdService(id: string): Promise<Book> {
+export async function getBookByIdService(id: string): Promise<Book | null> {
   const { data, error } = await supabase
     .from("books")
     .select("*")
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     throw new Error("Failed to fetch book");

@@ -8,7 +8,11 @@ export async function createUser(req: Request, res: Response) {
   const result = createUserSchema.safeParse(body);
 
   if (!result.success) {
-    return res.status(400).json({ error: result.error });
+    return res.status(400).json({
+      code: "INVALID_PARAMS",
+      message: "Invalid request parameters",
+      details: result.error.message,
+    });
   }
 
   await createUserService(result.data);
