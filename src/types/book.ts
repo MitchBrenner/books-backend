@@ -10,11 +10,3 @@ export type OpenLibraryBook = {
   first_publish_year?: number;
   cover_i?: number;
 };
-
-export type Book = {
-  id: string;
-  title: string;
-  author: string;
-  year: number | null;
-  cover_id: number | null;
-};

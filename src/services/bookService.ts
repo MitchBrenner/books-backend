@@ -1,5 +1,16 @@
 import { supabase } from "../lib/supabase.js";
-import type { Book } from "../types/book.js";
+import type { Book } from "../schemas/bookSchema.js";
+import type { BookRow } from "../types/db.types.js";
+
+function toBook(book: BookRow): Book {
+  return {
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    year: book.year,
+    coverId: book.cover_id,
+  };
+}
 
 export async function getAllBooksService(): Promise<Book[]> {
   const { data, error } = await supabase.from("books").select("*");
@@ -8,7 +19,9 @@ export async function getAllBooksService(): Promise<Book[]> {
     throw new Error("Failed to fetch books");
   }
 
-  return data;
+  const books: BookRow[] = data ?? [];
+
+  return books.map((book) => toBook(book));
 }
 
 export async function getBookByIdService(id: string): Promise<Book | null> {
@@ -22,7 +35,7 @@ export async function getBookByIdService(id: string): Promise<Book | null> {
     throw new Error("Failed to fetch book");
   }
 
-  return data;
+  return data ? toBook(data as BookRow) : null;
 }
 
 export async function getBooksByQueryService(query: string): Promise<Book[]> {
@@ -49,13 +62,15 @@ export async function getBooksByQueryService(query: string): Promise<Book[]> {
       }
     }
 
-    return books;
+    return books.map((book) => toBook(book));
   } else {
-    return data;
+    const books: BookRow[] = data ?? [];
+
+    return books.map((book) => toBook(book));
   }
 }
 
-async function getBooksByQueryFromExternal(query: string): Promise<Book[]> {
+async function getBooksByQueryFromExternal(query: string): Promise<BookRow[]> {
   const response = await fetch(
     `https://openlibrary.org/search.json?title=${encodeURIComponent(`${query}`)}`,
   );

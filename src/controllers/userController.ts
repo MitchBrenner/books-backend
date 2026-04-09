@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { createUserSchema } from "../schemas/userSchema.js";
 import { createUserService } from "../services/userService.js";
+import { z } from "zod";
 
 export async function createUser(req: Request, res: Response) {
   const body = req.body;
@@ -11,7 +12,7 @@ export async function createUser(req: Request, res: Response) {
     return res.status(400).json({
       code: "INVALID_PARAMS",
       message: "Invalid request parameters",
-      details: result.error.message,
+      details: z.flattenError(result.error),
     });
   }
 
