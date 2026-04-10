@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase.js";
-import type { UserBook } from "../schemas/userBookSchema.js";
+import type { CreateUserBook, UserBook } from "../schemas/userBookSchema.js";
 import type { UserBookRow } from "../types/db.types.js";
 
 export async function getUserBooksByUserIdService(
@@ -28,4 +28,25 @@ export async function getUserBooksByUserIdService(
     createdAt: row.created_at ? new Date(row.created_at) : undefined,
     updatedAt: row.updated_at ? new Date(row.updated_at) : undefined,
   }));
+}
+
+export async function createUserBookService(
+  userId: string,
+  userBook: CreateUserBook,
+): Promise<void> {
+  const { error } = await supabase.from("user_books").insert({
+    user_id: userId,
+    book_id: userBook.bookId,
+    status: userBook.status,
+    rating: userBook.rating,
+    review: userBook.review,
+    started_at: userBook.startedAt,
+    finished_at: userBook.finishedAt,
+    created_at: new Date(),
+    updated_at: new Date(),
+  });
+
+  if (error) {
+    throw new Error("Failed to add user book");
+  }
 }

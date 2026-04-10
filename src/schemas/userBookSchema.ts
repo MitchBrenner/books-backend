@@ -13,8 +13,18 @@ export const userBookSchema = z.object({
   updatedAt: z.date().optional(),
 });
 
-export const getUserBooksSchema = z.object({
+export const userIdParamsSchema = z.object({
   userId: z.uuid(),
 });
 
+export const createUserBookSchema = z.object({
+  bookId: z.string(),
+  status: z.enum(["want_to_read", "reading", "read", "dnf"]),
+  rating: z.number().min(1).max(5).optional().nullable(),
+  review: z.string().optional().nullable(),
+  startedAt: z.coerce.date().optional().nullable(),
+  finishedAt: z.coerce.date().optional().nullable(),
+});
+
 export type UserBook = z.infer<typeof userBookSchema>;
+export type CreateUserBook = z.infer<typeof createUserBookSchema>;
