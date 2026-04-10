@@ -7,6 +7,15 @@ export type BookRow = {
   created_at: string | null;
 };
 
+export type UserRow = {
+  id: string;
+  username: string;
+  first_name: string | null;
+  last_name: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
 export type UserBookRow = {
   id: string;
   book_id: string;
