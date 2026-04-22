@@ -30,7 +30,7 @@ export async function getUserBooksByUserIdService(
   }));
 }
 
-export async function createUserBookService(
+export async function saveBookToUserShelfService(
   userId: string,
   userBook: CreateUserBook,
 ): Promise<void> {
