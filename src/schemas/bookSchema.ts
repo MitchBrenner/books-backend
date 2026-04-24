@@ -10,6 +10,7 @@ export const bookSchema = z.object({
   author: z.string(),
   year: z.number().optional().nullable(),
   coverId: z.number().optional().nullable(),
+  pages: z.number().optional().nullable(),
 });
 
 export const searchBooksSchema = z.object({

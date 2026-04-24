@@ -4,6 +4,7 @@ export type BookRow = {
   author: string;
   year: number | null;
   cover_id: number | null;
+  pages: number | null;
   created_at: string | null;
 };
 

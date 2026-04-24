@@ -9,6 +9,7 @@ function toBook(book: BookRow): Book {
     author: book.author,
     year: book.year,
     coverId: book.cover_id,
+    pages: book.pages,
   };
 }
 
@@ -71,12 +72,13 @@ export async function getBooksByQueryService(query: string): Promise<Book[]> {
 }
 
 async function getBooksByQueryFromExternal(query: string): Promise<BookRow[]> {
+  const fields = "key,title,author_name,first_publish_year,cover_i,number_of_pages_median";
   const response = await fetch(
-    `https://openlibrary.org/search.json?title=${encodeURIComponent(`${query}`)}`,
+    `https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&fields=${fields}`,
   );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch books");
+    throw new Error(`Failed to fetch books from OpenLibrary: ${response.status} ${response.statusText}`);
   }
 
   const data = await response.json();
@@ -93,5 +95,6 @@ async function getBooksByQueryFromExternal(query: string): Promise<BookRow[]> {
       author: book.author_name?.[0] ?? "Unknown",
       year: book.first_publish_year ?? null,
       cover_id: book.cover_i ?? null,
+      pages: book.number_of_pages_median ?? null,
     }));
 }

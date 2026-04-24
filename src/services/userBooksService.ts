@@ -14,7 +14,8 @@ export async function getUserBooksByUserIdService(
         title,
         author,
         year,
-        cover_id
+        cover_id,
+        pages
       )
     `)
     .eq("user_id", userId);
@@ -43,6 +44,7 @@ export async function getUserBooksByUserIdService(
           author: row.books.author,
           year: row.books.year,
           coverId: row.books.cover_id,
+          pages: row.books.pages,
         }
       : undefined,
   }));
