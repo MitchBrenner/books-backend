@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { bookSchema } from "./bookSchema.js";
 
 export const userBookSchema = z.object({
   id: z.string(),
@@ -11,6 +12,7 @@ export const userBookSchema = z.object({
   finishedAt: z.date().optional().nullable(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
+  book: bookSchema.optional(),
 });
 
 export const userIdParamsSchema = z.object({

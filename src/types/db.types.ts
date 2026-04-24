@@ -19,3 +19,7 @@ export type UserBookRow = {
   created_at: string | null;
   updated_at: string | null;
 };
+
+export type UserBookRowWithBook = UserBookRow & {
+  books: BookRow | null;
+};
