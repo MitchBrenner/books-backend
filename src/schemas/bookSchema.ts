@@ -1,7 +1,3 @@
-/**
- * Zod validation
- */
-
 import { z } from "zod";
 
 export const bookSchema = z.object({
@@ -22,3 +18,5 @@ export const getBookParamsSchema = z.object({
 });
 
 export type Book = z.infer<typeof bookSchema>;
+export type SearchBooksQuery = z.infer<typeof searchBooksSchema>;
+export type GetBookParams = z.infer<typeof getBookParamsSchema>;

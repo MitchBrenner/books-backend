@@ -4,13 +4,11 @@ import {
   getBookByIdService,
   getBooksByQueryService,
 } from "../services/bookService.js";
-import type {
-  GetBookParamsDto,
-  SearchBooksQueryDto,
-} from "../types/bookDtos.js";
 import {
   getBookParamsSchema,
   searchBooksSchema,
+  type GetBookParams,
+  type SearchBooksQuery,
 } from "../schemas/bookSchema.js";
 import { z } from "zod";
 
@@ -20,7 +18,7 @@ export async function getAllBooks(req: Request, res: Response) {
 }
 
 export async function getBookById(
-  req: Request<GetBookParamsDto>,
+  req: Request<GetBookParams>,
   res: Response,
 ) {
   const params = req.params;
@@ -48,7 +46,7 @@ export async function getBookById(
 }
 
 export async function getBooksByQuery(
-  req: Request<{}, {}, {}, SearchBooksQueryDto>,
+  req: Request<{}, {}, {}, SearchBooksQuery>,
   res: Response,
 ) {
   const { q } = req.query;
