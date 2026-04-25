@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase.js";
-import type { CreateUserBook, UserBook } from "../schemas/userBookSchema.js";
+import type { CreateUserBook, UpdateUserBook, UserBook } from "../schemas/userBookSchema.js";
 import type { UserBookRowWithBook } from "../types/db.types.js";
 
 export async function getUserBooksByUserIdService(
@@ -48,6 +48,44 @@ export async function getUserBooksByUserIdService(
         }
       : undefined,
   }));
+}
+
+export async function updateUserBookService(
+  userId: string,
+  userBookId: string,
+  data: UpdateUserBook,
+): Promise<void> {
+  const { error } = await supabase
+    .from("user_books")
+    .update({
+      status: data.status,
+      rating: data.rating,
+      review: data.review,
+      started_at: data.startedAt,
+      finished_at: data.finishedAt,
+      updated_at: new Date(),
+    })
+    .eq("id", userBookId)
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error("Failed to update user book");
+  }
+}
+
+export async function deleteUserBookService(
+  userId: string,
+  userBookId: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("user_books")
+    .delete()
+    .eq("id", userBookId)
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error("Failed to delete user book");
+  }
 }
 
 export async function saveBookToUserShelfService(
