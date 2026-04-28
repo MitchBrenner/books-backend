@@ -6,7 +6,7 @@ export const userBookSchema = z.object({
   bookId: z.string(),
   userId: z.uuid(),
   status: z.enum(["want_to_read", "reading", "read", "dnf"]),
-  rating: z.number().min(1).max(5).optional().nullable(),
+  rating: z.number().min(1).max(5).multipleOf(0.5).optional().nullable(),
   review: z.string().optional().nullable(),
   startedAt: z.date().optional().nullable(),
   finishedAt: z.date().optional().nullable(),
@@ -22,7 +22,7 @@ export const userIdParamsSchema = z.object({
 export const createUserBookSchema = z.object({
   bookId: z.string(),
   status: z.enum(["want_to_read", "reading", "read", "dnf"]),
-  rating: z.number().min(1).max(5).optional().nullable(),
+  rating: z.number().min(1).max(5).multipleOf(0.5).optional().nullable(),
   review: z.string().optional().nullable(),
   startedAt: z.coerce.date().optional().nullable(),
   finishedAt: z.coerce.date().optional().nullable(),
@@ -30,7 +30,7 @@ export const createUserBookSchema = z.object({
 
 export const updateUserBookSchema = z.object({
   status: z.enum(["want_to_read", "reading", "read", "dnf"]).optional(),
-  rating: z.number().min(1).max(5).optional().nullable(),
+  rating: z.number().min(1).max(5).multipleOf(0.5).optional().nullable(),
   review: z.string().optional().nullable(),
   startedAt: z.coerce.date().optional().nullable(),
   finishedAt: z.coerce.date().optional().nullable(),
