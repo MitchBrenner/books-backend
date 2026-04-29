@@ -8,7 +8,7 @@ function toBook(book: BookRow): Book {
     title: book.title,
     author: book.author,
     year: book.year,
-    coverId: book.cover_id,
+    coverUrl: book.cover_url,
     pages: book.pages,
   };
 }
@@ -52,7 +52,7 @@ export async function getBooksByQueryService(query: string): Promise<Book[]> {
 
   // if we don't have the book check open library & add to our db
   if (data.length === 0) {
-    const books = await getBooksByQueryFromExternal(query);
+    const books = await searchGoogleBooks(query);
 
     // add to our db only if query is meaningful
     if (query.length >= 3) {
@@ -71,30 +71,62 @@ export async function getBooksByQueryService(query: string): Promise<Book[]> {
   }
 }
 
-async function getBooksByQueryFromExternal(query: string): Promise<BookRow[]> {
-  const fields = "key,title,author_name,first_publish_year,cover_i,number_of_pages_median";
-  const response = await fetch(
-    `https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&fields=${fields}`,
-  );
+const SUMMARY_PATTERN = /^(summary|study guide|analysis|review) of /i;
+const INSTITUTIONAL_AUTHOR_PATTERN =
+  /\(state\)|\bdepartment\b|\bbureau\b|\blegislature\b|\bboard\b|\bcommittee\b|\bcommission\b/i;
+const MIN_PAGES = 50;
+const MIN_YEAR = 1950;
+
+async function searchGoogleBooks(query: string): Promise<BookRow[]> {
+  const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
+  const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=20&printType=books&key=${apiKey}`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch books from OpenLibrary: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch books from Google Books: ${response.status} ${response.statusText}`,
+    );
   }
 
   const data = await response.json();
 
-  // map data
-  return data.docs
-    .filter((book: any) =>
-      book.title?.toLowerCase().includes(query.toLowerCase()),
-    )
-    .slice(0, 10)
-    .map((book: any) => ({
-      id: book.key.replace("/works/", ""),
-      title: book.title,
-      author: book.author_name?.[0] ?? "Unknown",
-      year: book.first_publish_year ?? null,
-      cover_id: book.cover_i ?? null,
-      pages: book.number_of_pages_median ?? null,
-    }));
+  if (!data.items) return [];
+
+  const seen = new Set<string>();
+  const results: BookRow[] = [];
+
+  for (const item of data.items) {
+    const info = item.volumeInfo;
+    const title: string = info.title ?? "Unknown";
+    const author: string = info.authors?.[0] ?? "Unknown";
+    const pages: number | null = info.pageCount ?? null;
+
+    if (SUMMARY_PATTERN.test(title)) continue;
+    if (INSTITUTIONAL_AUTHOR_PATTERN.test(author)) continue;
+    if (pages !== null && pages < MIN_PAGES) continue;
+
+    const year = info.publishedDate
+      ? parseInt(info.publishedDate.substring(0, 4))
+      : null;
+    if (year !== null && year < MIN_YEAR) continue;
+
+    const key = `${title.toLowerCase()}|${author.toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    results.push({
+      id: item.id,
+      title,
+      author,
+      year: year && !isNaN(year) ? year : null,
+      cover_url: info.imageLinks?.thumbnail ?? null,
+      pages,
+      created_at: null,
+    });
+
+    if (results.length === 10) break;
+  }
+
+  return results;
 }

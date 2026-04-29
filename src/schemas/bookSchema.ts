@@ -5,7 +5,7 @@ export const bookSchema = z.object({
   title: z.string(),
   author: z.string(),
   year: z.number().optional().nullable(),
-  coverId: z.number().optional().nullable(),
+  coverUrl: z.string().optional().nullable(),
   pages: z.number().optional().nullable(),
 });
 

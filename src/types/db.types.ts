@@ -3,7 +3,7 @@ export type BookRow = {
   title: string;
   author: string;
   year: number | null;
-  cover_id: number | null;
+  cover_url: string | null;
   pages: number | null;
   created_at: string | null;
 };
