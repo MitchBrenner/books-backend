@@ -99,20 +99,26 @@ export async function deleteUserBookService(
 export async function saveBookToUserShelfService(
   userId: string,
   userBook: CreateUserBook,
-): Promise<void> {
-  const { error } = await supabase.from("user_books").insert({
-    user_id: userId,
-    book_id: userBook.bookId,
-    status: userBook.status,
-    rating: userBook.rating,
-    review: userBook.review,
-    started_at: userBook.startedAt,
-    finished_at: userBook.finishedAt,
-    created_at: new Date(),
-    updated_at: new Date(),
-  });
+): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from("user_books")
+    .insert({
+      user_id: userId,
+      book_id: userBook.bookId,
+      status: userBook.status,
+      rating: userBook.rating,
+      review: userBook.review,
+      started_at: userBook.startedAt,
+      finished_at: userBook.finishedAt,
+      created_at: new Date(),
+      updated_at: new Date(),
+    })
+    .select("id")
+    .single();
 
   if (error) {
     throw new Error("Failed to add user book");
   }
+
+  return { id: data.id };
 }
