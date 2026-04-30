@@ -71,7 +71,8 @@ export async function getBooksByQueryService(query: string): Promise<Book[]> {
   }
 }
 
-const SUMMARY_PATTERN = /^(summary|study guide|analysis|review) of /i;
+const SUMMARY_PATTERN =
+  /\b(summary|study guide|analysis|workbook|companion|unofficial|notes|review of|young reader)\b/i;
 const INSTITUTIONAL_AUTHOR_PATTERN =
   /\(state\)|\bdepartment\b|\bbureau\b|\blegislature\b|\bboard\b|\bcommittee\b|\bcommission\b/i;
 const MIN_PAGES = 50;
@@ -79,7 +80,8 @@ const MIN_YEAR = 1950;
 
 async function searchGoogleBooks(query: string): Promise<BookRow[]> {
   const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
-  const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=20&printType=books&key=${apiKey}`;
+  const encodedQuery = encodeURIComponent(`${query} intitle:"${query}"`);
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=40&printType=books&langRestrict=en&key=${apiKey}`;
 
   const response = await fetch(url);
 
@@ -94,7 +96,7 @@ async function searchGoogleBooks(query: string): Promise<BookRow[]> {
   if (!data.items) return [];
 
   const seen = new Set<string>();
-  const results: BookRow[] = [];
+  const candidates: Array<BookRow & { ratingsCount: number }> = [];
 
   for (const item of data.items) {
     const info = item.volumeInfo;
@@ -102,6 +104,8 @@ async function searchGoogleBooks(query: string): Promise<BookRow[]> {
     const author: string = info.authors?.[0] ?? "Unknown";
     const pages: number | null = info.pageCount ?? null;
 
+    const identifiers: { type: string }[] = info.industryIdentifiers ?? [];
+    if (!identifiers.some((i) => i.type === "ISBN_13")) continue;
     if (SUMMARY_PATTERN.test(title)) continue;
     if (INSTITUTIONAL_AUTHOR_PATTERN.test(author)) continue;
     if (pages !== null && pages < MIN_PAGES) continue;
@@ -111,11 +115,11 @@ async function searchGoogleBooks(query: string): Promise<BookRow[]> {
       : null;
     if (year !== null && year < MIN_YEAR) continue;
 
-    const key = `${title.toLowerCase()}|${author.toLowerCase()}`;
+    const key = `${title.toLowerCase()}|${author.toLowerCase()}|${year}`;
     if (seen.has(key)) continue;
     seen.add(key);
 
-    results.push({
+    candidates.push({
       id: item.id,
       title,
       author,
@@ -123,10 +127,12 @@ async function searchGoogleBooks(query: string): Promise<BookRow[]> {
       cover_url: info.imageLinks?.thumbnail ?? null,
       pages,
       created_at: null,
+      ratingsCount: info.ratingsCount ?? 0,
     });
-
-    if (results.length === 10) break;
   }
 
-  return results;
+  return candidates
+    .sort((a, b) => b.ratingsCount - a.ratingsCount)
+    .slice(0, 10)
+    .map(({ ratingsCount: _, ...book }) => book);
 }
