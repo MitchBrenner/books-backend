@@ -14,7 +14,7 @@ export async function getUserBooksByUserIdService(
         title,
         author,
         year,
-        cover_id,
+        cover_url,
         pages
       )
     `)
@@ -43,7 +43,7 @@ export async function getUserBooksByUserIdService(
           title: row.books.title,
           author: row.books.author,
           year: row.books.year,
-          coverId: row.books.cover_id,
+          coverUrl: row.books.cover_url,
           pages: row.books.pages,
         }
       : undefined,
