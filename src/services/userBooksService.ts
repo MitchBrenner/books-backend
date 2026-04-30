@@ -12,10 +12,14 @@ export async function getUserBooksByUserIdService(
       books (
         id,
         title,
+        subtitle,
         author,
         year,
         cover_url,
-        pages
+        pages,
+        description,
+        categories,
+        google_rating
       )
     `)
     .eq("user_id", userId);
@@ -41,10 +45,14 @@ export async function getUserBooksByUserIdService(
       ? {
           id: row.books.id,
           title: row.books.title,
+          subtitle: row.books.subtitle,
           author: row.books.author,
           year: row.books.year,
           coverUrl: row.books.cover_url,
           pages: row.books.pages,
+          description: row.books.description,
+          categories: row.books.categories,
+          googleRating: row.books.google_rating,
         }
       : undefined,
   }));

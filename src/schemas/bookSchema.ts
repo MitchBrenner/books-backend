@@ -3,10 +3,14 @@ import { z } from "zod";
 export const bookSchema = z.object({
   id: z.string(),
   title: z.string(),
+  subtitle: z.string().optional().nullable(),
   author: z.string(),
   year: z.number().optional().nullable(),
   coverUrl: z.string().optional().nullable(),
   pages: z.number().optional().nullable(),
+  description: z.string().optional().nullable(),
+  categories: z.array(z.string()).optional().nullable(),
+  googleRating: z.number().optional().nullable(),
 });
 
 export const searchBooksSchema = z.object({
