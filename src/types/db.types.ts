@@ -1,10 +1,14 @@
 export type BookRow = {
   id: string;
   title: string;
+  subtitle: string | null;
   author: string;
   year: number | null;
   cover_url: string | null;
   pages: number | null;
+  description: string | null;
+  categories: string[] | null;
+  google_rating: number | null;
   created_at: string | null;
 };
 

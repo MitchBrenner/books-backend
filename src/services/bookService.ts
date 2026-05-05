@@ -6,10 +6,14 @@ function toBook(book: BookRow): Book {
   return {
     id: book.id,
     title: book.title,
+    subtitle: book.subtitle,
     author: book.author,
     year: book.year,
     coverUrl: book.cover_url,
     pages: book.pages,
+    description: book.description,
+    categories: book.categories,
+    googleRating: book.google_rating,
   };
 }
 
@@ -122,10 +126,14 @@ async function searchGoogleBooks(query: string): Promise<BookRow[]> {
     candidates.push({
       id: item.id,
       title,
+      subtitle: info.subtitle ?? null,
       author,
       year: year && !isNaN(year) ? year : null,
       cover_url: info.imageLinks?.thumbnail ?? null,
       pages,
+      description: info.description ?? null,
+      categories: info.categories ?? null,
+      google_rating: info.averageRating ?? null,
       created_at: null,
       ratingsCount: info.ratingsCount ?? 0,
     });

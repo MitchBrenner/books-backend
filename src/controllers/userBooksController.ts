@@ -78,9 +78,9 @@ export async function saveBookToMyShelf(req: Request, res: Response) {
     });
   }
 
-  await saveBookToUserShelfService(userId, result.data);
+  const { id } = await saveBookToUserShelfService(userId, result.data);
 
-  return res.status(201).json({ message: "Successfully added book" });
+  return res.status(201).json({ id, message: "Successfully added book" });
 }
 
 export async function updateMyBook(

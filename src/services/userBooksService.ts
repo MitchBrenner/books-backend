@@ -12,10 +12,14 @@ export async function getUserBooksByUserIdService(
       books (
         id,
         title,
+        subtitle,
         author,
         year,
         cover_url,
-        pages
+        pages,
+        description,
+        categories,
+        google_rating
       )
     `)
     .eq("user_id", userId);
@@ -41,10 +45,14 @@ export async function getUserBooksByUserIdService(
       ? {
           id: row.books.id,
           title: row.books.title,
+          subtitle: row.books.subtitle,
           author: row.books.author,
           year: row.books.year,
           coverUrl: row.books.cover_url,
           pages: row.books.pages,
+          description: row.books.description,
+          categories: row.books.categories,
+          googleRating: row.books.google_rating,
         }
       : undefined,
   }));
@@ -91,20 +99,26 @@ export async function deleteUserBookService(
 export async function saveBookToUserShelfService(
   userId: string,
   userBook: CreateUserBook,
-): Promise<void> {
-  const { error } = await supabase.from("user_books").insert({
-    user_id: userId,
-    book_id: userBook.bookId,
-    status: userBook.status,
-    rating: userBook.rating,
-    review: userBook.review,
-    started_at: userBook.startedAt,
-    finished_at: userBook.finishedAt,
-    created_at: new Date(),
-    updated_at: new Date(),
-  });
+): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from("user_books")
+    .insert({
+      user_id: userId,
+      book_id: userBook.bookId,
+      status: userBook.status,
+      rating: userBook.rating,
+      review: userBook.review,
+      started_at: userBook.startedAt,
+      finished_at: userBook.finishedAt,
+      created_at: new Date(),
+      updated_at: new Date(),
+    })
+    .select("id")
+    .single();
 
   if (error) {
     throw new Error("Failed to add user book");
   }
+
+  return { id: data.id };
 }
