@@ -11,6 +11,7 @@ import {
   userBookParamsSchema,
   userIdParamsSchema,
 } from "../schemas/userBookSchema.js";
+import { ValidationError } from "../lib/errors.js";
 import { z } from "zod";
 
 function getAuthenticatedUserId(req: Request, res: Response): string | null {
@@ -78,9 +79,15 @@ export async function saveBookToMyShelf(req: Request, res: Response) {
     });
   }
 
-  const { id } = await saveBookToUserShelfService(userId, result.data);
-
-  return res.status(201).json({ id, message: "Successfully added book" });
+  try {
+    const { id } = await saveBookToUserShelfService(userId, result.data);
+    return res.status(201).json({ id, message: "Successfully added book" });
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      return res.status(400).json({ code: "INVALID_REQUEST", message: err.message });
+    }
+    return res.status(500).json({ code: "INTERNAL_ERROR", message: "Failed to add book" });
+  }
 }
 
 export async function updateMyBook(
@@ -108,9 +115,15 @@ export async function updateMyBook(
     });
   }
 
-  await updateUserBookService(userId, params.data.userBookId, body.data);
-
-  return res.status(200).json({ message: "Successfully updated book" });
+  try {
+    await updateUserBookService(userId, params.data.userBookId, body.data);
+    return res.status(200).json({ message: "Successfully updated book" });
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      return res.status(400).json({ code: "INVALID_REQUEST", message: err.message });
+    }
+    return res.status(500).json({ code: "INTERNAL_ERROR", message: "Failed to update book" });
+  }
 }
 
 export async function deleteMyBook(

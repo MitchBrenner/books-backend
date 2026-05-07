@@ -1,4 +1,5 @@
 import { supabase, supabaseAdmin } from "../lib/supabase.js";
+import { ValidationError } from "../lib/errors.js";
 import type {
   CreateUserBook,
   UpdateUserBook,
@@ -100,6 +101,22 @@ export async function updateUserBookService(
   userBookId: string,
   data: UpdateUserBook,
 ): Promise<void> {
+  if (data.currPage != null) {
+    const { data: existing } = await supabase
+      .from("user_books")
+      .select("books(pages)")
+      .eq("id", userBookId)
+      .single();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pages = (existing as any)?.books?.pages as number | null | undefined;
+    if (pages != null && data.currPage > pages) {
+      throw new ValidationError(
+        `Current page (${data.currPage}) cannot exceed the book's total pages (${pages})`,
+      );
+    }
+  }
+
   const { error } = await supabase
     .from("user_books")
     .update({
@@ -142,6 +159,20 @@ export async function saveBookToUserShelfService(
   userId: string,
   userBook: CreateUserBook,
 ): Promise<{ id: string }> {
+  if (userBook.currPage != null) {
+    const { data: bookData } = await supabase
+      .from("books")
+      .select("pages")
+      .eq("id", userBook.bookId)
+      .single();
+
+    if (bookData?.pages != null && userBook.currPage > bookData.pages) {
+      throw new ValidationError(
+        `Current page (${userBook.currPage}) cannot exceed the book's total pages (${bookData.pages})`,
+      );
+    }
+  }
+
   const { data, error } = await supabase
     .from("user_books")
     .insert({
