@@ -21,6 +21,7 @@ export type UserBookRow = {
   review: string | null;
   started_at: string | null;
   finished_at: string | null;
+  curr_page: number | null;
   created_at: string | null;
   updated_at: string | null;
 };

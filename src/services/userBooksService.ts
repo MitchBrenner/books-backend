@@ -1,13 +1,48 @@
-import { supabase } from "../lib/supabase.js";
-import type { CreateUserBook, UpdateUserBook, UserBook } from "../schemas/userBookSchema.js";
+import { supabase, supabaseAdmin } from "../lib/supabase.js";
+import type {
+  CreateUserBook,
+  UpdateUserBook,
+  UserBook,
+} from "../schemas/userBookSchema.js";
 import type { UserBookRowWithBook } from "../types/db.types.js";
+
+async function recalculateTotalPagesRead(userId: string): Promise<void> {
+  const { data, error } = await supabase
+    .from("user_books")
+    .select(
+      `
+      *,
+      books (
+        pages
+      )
+    `,
+    )
+    .eq("user_id", userId);
+
+  if (error) return;
+
+  const rows: UserBookRowWithBook[] = data ?? [];
+
+  const total = rows.reduce((sum, row) => {
+    const pages = row.books?.pages ?? 0;
+    if (row.status === "read") return sum + pages;
+    if (row.status === "reading") return sum + (row.curr_page ?? 0);
+    return sum;
+  }, 0);
+
+  await supabaseAdmin
+    .from("profiles")
+    .update({ total_pages_read: total })
+    .eq("id", userId);
+}
 
 export async function getUserBooksByUserIdService(
   userId: string,
 ): Promise<UserBook[]> {
   const { data, error } = await supabase
     .from("user_books")
-    .select(`
+    .select(
+      `
       *,
       books (
         id,
@@ -21,7 +56,8 @@ export async function getUserBooksByUserIdService(
         categories,
         google_rating
       )
-    `)
+    `,
+    )
     .eq("user_id", userId);
 
   if (error) {
@@ -37,6 +73,7 @@ export async function getUserBooksByUserIdService(
     status: row.status,
     rating: row.rating,
     review: row.review,
+    currPage: row.curr_page,
     startedAt: row.started_at ? new Date(row.started_at) : null,
     finishedAt: row.finished_at ? new Date(row.finished_at) : null,
     createdAt: row.created_at ? new Date(row.created_at) : undefined,
@@ -69,6 +106,7 @@ export async function updateUserBookService(
       status: data.status,
       rating: data.rating,
       review: data.review,
+      curr_page: data.currPage,
       started_at: data.startedAt,
       finished_at: data.finishedAt,
       updated_at: new Date(),
@@ -79,6 +117,8 @@ export async function updateUserBookService(
   if (error) {
     throw new Error("Failed to update user book");
   }
+
+  await recalculateTotalPagesRead(userId);
 }
 
 export async function deleteUserBookService(
@@ -94,6 +134,8 @@ export async function deleteUserBookService(
   if (error) {
     throw new Error("Failed to delete user book");
   }
+
+  await recalculateTotalPagesRead(userId);
 }
 
 export async function saveBookToUserShelfService(
@@ -108,6 +150,7 @@ export async function saveBookToUserShelfService(
       status: userBook.status,
       rating: userBook.rating,
       review: userBook.review,
+      curr_page: userBook.currPage,
       started_at: userBook.startedAt,
       finished_at: userBook.finishedAt,
       created_at: new Date(),
@@ -119,6 +162,8 @@ export async function saveBookToUserShelfService(
   if (error) {
     throw new Error("Failed to add user book");
   }
+
+  await recalculateTotalPagesRead(userId);
 
   return { id: data.id };
 }
