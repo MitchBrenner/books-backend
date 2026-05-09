@@ -8,6 +8,7 @@ export const userBookSchema = z.object({
   status: z.enum(["want_to_read", "reading", "read", "dnf"]),
   rating: z.number().min(1).max(5).multipleOf(0.5).optional().nullable(),
   review: z.string().optional().nullable(),
+  currPage: z.number().int().min(0).max(10000).optional().nullable(),
   startedAt: z.date().optional().nullable(),
   finishedAt: z.date().optional().nullable(),
   createdAt: z.date().optional(),
@@ -24,6 +25,7 @@ export const createUserBookSchema = z.object({
   status: z.enum(["want_to_read", "reading", "read", "dnf"]),
   rating: z.number().min(1).max(5).multipleOf(0.5).optional().nullable(),
   review: z.string().optional().nullable(),
+  currPage: z.number().int().min(0).max(10000).optional().nullable(),
   startedAt: z.coerce.date().optional().nullable(),
   finishedAt: z.coerce.date().optional().nullable(),
 });
@@ -32,6 +34,7 @@ export const updateUserBookSchema = z.object({
   status: z.enum(["want_to_read", "reading", "read", "dnf"]).optional(),
   rating: z.number().min(1).max(5).multipleOf(0.5).optional().nullable(),
   review: z.string().optional().nullable(),
+  currPage: z.number().int().min(0).max(10000).optional().nullable(),
   startedAt: z.coerce.date().optional().nullable(),
   finishedAt: z.coerce.date().optional().nullable(),
 });
